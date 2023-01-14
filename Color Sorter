@@ -1,0 +1,134 @@
+#include <Servo.h>
+Servo Servo_gate,Servo_slide;
+
+//Servo motters pins
+int Servo_gate_pin =12;//servo moter on gate attached to 5 pin of NODMCU
+int Servo_slide_pin =15;//servo moter on slide attached to 4 pin of NODMCU
+
+int S0_pin =5;//Sensor S0 pin attached to 14 pin of NODMCU
+int S1_pin =4;//Sensor S1 pin attached to 12 pin of NODMCU
+int S2_pin =0;//Sensor S2 pin attached to 13 pin of NODMCU
+int S3_pin =2;//Sensor S3 pin attached to 15 pin of NODMCU
+int OUT_pin =14;//Sensor Out pin attached to 3 pin of NODMCU
+
+//This function runs on starup(as like BIOS in computer)
+void setup(){
+  //specifing role of pins of NODMCU
+  pinMode(S0_pin, OUTPUT);//Pin attched to S0 will be only use as output
+  pinMode(S1_pin, OUTPUT);//Pin attched to S1 will be only use as output
+  pinMode(S2_pin, OUTPUT);//Pin attched to S2 will be only use as output
+  pinMode(S3_pin, OUTPUT);//Pin attched to S3 will be only use as output
+  pinMode(OUT_pin, INPUT);//Pin attched to output pin will be only use as input
+
+//Seting pulse width to 20%
+  digitalWrite(S0_pin,HIGH);
+  digitalWrite(S1_pin,LOW);
+  
+  //servo moter attached
+  Servo_gate.attach(Servo_gate_pin);
+  Servo_slide.attach(Servo_slide_pin);
+  Servo_gate.write(0);
+  Servo_slide.write(0);
+
+//serial port number
+  Serial.begin(9600);
+}
+void loop(){
+   Servo_gate.write(0);
+  int r, g, b;
+//geting red value
+  r = red_value();
+  delay(200);
+//geting green value
+  g = green_value();
+  delay(200);
+//geting blue value
+  b = blue_value();
+  delay(200);
+//displaying all the RGB value in serial port
+  display_value(r, g, b);
+  //ball is blue
+  if (b<80)
+  {
+    Rotate_Slide(0);
+    Serial.println("Color Blue");
+    delay(900);
+    Open_Gate();
+    delay(1000);
+  }
+ 
+  // if ball is red
+  else if (r < 97)
+  {
+    Rotate_Slide(120);
+    Serial.println("Color Red");
+    delay(1000);
+    Open_Gate();
+    delay(2000);
+  }
+   //if ball is green
+  else if (g < 180&b<135)
+  {
+    Rotate_Slide(60);
+    Serial.println("Color Green");
+    delay(1000);
+    Open_Gate();
+    delay(2000);
+  }
+}
+//function for displaying rgb
+void display_value(int r, int g, int b){
+  Serial.print("r = ");
+  Serial.print(r);
+  Serial.print(" ");
+  Serial.print("g = ");
+  Serial.print(g);
+  Serial.print(" ");
+  Serial.print("b = ");
+  Serial.print(b);
+  Serial.print(" ");
+  Serial.println();
+}
+//function for rotate slide
+void Rotate_Slide(int x){
+  Servo_slide.write(x);
+
+  }
+//function for opning gate
+void Open_Gate(){
+  Servo_gate.write(110);
+  delay(170);
+  Servo_gate.write(0);
+  }
+
+
+//function for geting red value
+int red_value(){
+
+  digitalWrite(S2_pin,LOW);
+  digitalWrite(S3_pin,LOW);
+
+ int x=pulseIn(OUT_pin,LOW);
+ 
+    return x;
+}
+//function for getting green value
+int green_value(){
+
+  digitalWrite(S2_pin,HIGH);
+  digitalWrite(S3_pin,HIGH);
+  int x=pulseIn(OUT_pin,LOW);
+  
+    return x;
+
+}
+//function for gettin blue value
+int blue_value(){
+
+  digitalWrite(S2_pin,LOW);
+  digitalWrite(S3_pin,HIGH);
+  int x=pulseIn(OUT_pin,LOW);
+
+    return x;
+ 
+}
